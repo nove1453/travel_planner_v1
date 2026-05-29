@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>旅のしおり — Tabi OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Montserrat:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <link rel="stylesheet" href="shiori.css">
+</head>
+<body>
+
+  <!-- ━━ Nav Bar ━━━━━━━━━━━━━━━━━━━━━━━━ -->
+  <nav class="s-nav">
+    <button class="s-nav-back" onclick="history.back()" aria-label="戻る">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    </button>
+    <span class="s-nav-title" id="sNavTitle">旅のしおり</span>
+    <button class="s-nav-save" id="btnSaveImg">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+      <span>画像保存</span>
+    </button>
+  </nav>
+
+  <!-- ━━ Story Preview Card ━━━━━━━━━━━━━━ -->
+  <section class="story-preview-section">
+    <p class="story-preview-label">
+      <span>Instagram Story Preview</span>
+      <span class="story-preview-size">1080 × 1920px</span>
+    </p>
+    <!-- storyCard: 360×640 displayed, exported at 1080×1920 (scale ×3) -->
+    <div id="storyCard" class="story-card">
+      <!-- rendered by shiori.js -->
+    </div>
+  </section>
+
+  <!-- ━━ Full Itinerary ━━━━━━━━━━━━━━━━━━ -->
+  <div class="full-itinerary">
+    <div id="itTarget" class="it-target">
+
+      <!-- Cover -->
+      <div id="itCover" class="it-cover">
+        <span class="it-eyecatch">The Art of Travel</span>
+        <h1 id="itTitle" class="it-title"></h1>
+        <p id="itConcept" class="it-concept"></p>
+      </div>
+
+      <!-- Hotel -->
+      <div id="itHotelCard" class="it-hotel">
+        <span class="hotel-badge">Stay</span>
+        <h3 id="itHotelTitle" class="hotel-title"></h3>
+        <p id="itHotelDesc" class="hotel-desc"></p>
+      </div>
+
+      <!-- Days (rendered by JS) -->
+      <div id="itDaysContainer"></div>
+
+      <!-- Summary -->
+      <div class="it-summary">
+        <div class="summary-mark">✦</div>
+        <span class="summary-label">Concierge Message</span>
+        <p id="itSummary" class="summary-text"></p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ━━ Loading Overlay ━━━━━━━━━━━━━━━━━ -->
+  <div id="loadingOverlay" class="loading-overlay" style="display:none;">
+    <div class="loading-inner">
+      <div class="loading-spinner"></div>
+      <p>画像を生成中...</p>
+      <span>少々お待ちください</span>
+    </div>
+  </div>
+
+  <script src="shiori.js"></script>
+</body>
+</html>
