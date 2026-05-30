@@ -18,10 +18,16 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
     </button>
     <span class="s-nav-title" id="sNavTitle">旅のしおり</span>
-    <button class="s-nav-save" id="btnSaveImg">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-      <span>画像保存</span>
-    </button>
+    <div class="s-nav-actions">
+      <button class="s-nav-save" data-save-story>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        <span>画像保存</span>
+      </button>
+      <button class="s-nav-save s-nav-share" data-share-shiori>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+        <span>共有</span>
+      </button>
+    </div>
   </nav>
 
   <!-- ━━ Story Preview Card ━━━━━━━━━━━━━━ -->
@@ -33,6 +39,10 @@
     <!-- storyCard: 360×640 displayed, exported at 1080×1920 (scale ×3) -->
     <div id="storyCard" class="story-card">
       <!-- rendered by shiori.js -->
+    </div>
+    <div class="story-actions">
+      <button type="button" class="story-action-btn story-action-primary" data-save-story>Instagram画像を保存</button>
+      <button type="button" class="story-action-btn" data-share-shiori>しおりをシェア</button>
     </div>
   </section>
 
