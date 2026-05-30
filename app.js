@@ -18,9 +18,7 @@ destination: ''
 
 1. themeManager
 ──────────────────────────────────────────────────────────────── */ 
-
 const themeManager = {
-
 personalities: {
 PAVL: { name:'旅演出家',      tagline:'旅全体の世界観を作り込むタイプ',             desc:'あなたが訪れる旅はすべて完璧にプロデュースされた一本の美しい映画。綿密なスケジューリングと最高級のホテル、息をのむような絶景を余すことなく楽しむカリスマです。最高の世界観と上質な空間を調和させるセンスはピカイチです。' },
 PAVS: { name:'景色収集家',    tagline:'絶景・映えスポットを賢くコレクションするタイプ', desc:'美しい光景を絶対に見逃さない、計画的でフットワークの軽いハントマスター。無駄のないルート計画で、話題の絶景スポットや旬な景色を抜群のタイパで集めて回ります。賢くコストを抑えながらも、写真映えのクオリティには一切の妥協なしです。' },
@@ -64,7 +62,7 @@ const resultImg = document.getElementById('result-img');
 const fallback = document.getElementById('result-img-fallback');
 
 // resultData.code が "PAVL" なら "pavl.png" を読み込む
-resultImg.src = `${resultData.code.toLowerCase()}.png``;
+resultImg.src = ${resultData.code.toLowerCase()}.png;
 resultImg.style.display = 'block';
 
 // 画像読み込み成功時：準備中を隠す
@@ -160,7 +158,6 @@ card.innerHTML =         `<span class="q-num">Q${String(i + 1).padStart(2, '0')}
 container.appendChild(card);
 });
 
-```
 // Remove error highlight on answer
 container.addEventListener('change', e => {
   const name = e.target.name;
@@ -169,7 +166,6 @@ container.addEventListener('change', e => {
   const card = document.getElementById(`qcard-${id}`);
   if (card) card.classList.remove('error');
 });
-```
 
 },
 
