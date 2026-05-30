@@ -102,40 +102,123 @@ const shioriRenderer = {
 
   _renderStoryCard(container, data, gradient) {
     if (!container) return;
-    const days = (data.days || []).slice(0, 4);
+    const cfg = data.image_config || {};
+    const persona = data.traveler_personality || this._getStoredPersonality() || {};
+    const code = (persona.code || 'PAVL').toLowerCase();
+    const typeImage = persona.illustration || `images/${code}.png`;
+    const firstDay = (data.days || [])[0] || {};
+    const theme = firstDay.theme || data.trip_concept || '';
+    const tags = this._getStoryTags(data);
+    const rows = this._getStoryRows(data);
+    const footer = this._formatStoryFooter(data.summary || cfg.caption || '');
 
-    const daysHtml = days.map(day => {
-      const spots = (day.schedule || [])
-        .filter(s => s.category !== 'move' && s.place)
-        .slice(0, 3)
-        .map(s => s.place)
-        .join(' · ');
-      return `
-        <div class="sc-day-row" data-glass>
-          <div class="sc-day-num">Day ${day.day}</div>
-          <div class="sc-day-theme">${day.theme || ''}</div>
-          <div class="sc-spots">${spots || '—'}</div>
-        </div>`;
-    }).join('');
-
-    const summarySnip = (data.summary || '').slice(0, 55) +
-                        ((data.summary || '').length > 55 ? '…' : '');
+    const tagsHtml = tags.map(tag => `<span class="sc-tag">${this._esc(tag)}</span>`).join('');
+    const rowsHtml = rows.map(row => `
+      <li class="sc-route-row">
+        <span class="sc-route-time">${this._esc(row.time)}</span>
+        <span class="sc-route-main">
+          <strong>${this._esc(row.place)}</strong>
+          <small>${this._esc(row.note)}</small>
+        </span>
+      </li>
+    `).join('');
 
     container.innerHTML = `
       <div class="sc-bg" style="background:${gradient};"></div>
       <div class="sc-body">
-        <div class="sc-brand">Tabi OS</div>
-        <div class="sc-header" data-glass>
-          <div class="sc-trip-title">${data.trip_title || ''}</div>
-          <div class="sc-concept">${data.trip_concept || ''}</div>
+        <header class="sc-hero">
+          <p class="sc-kicker">${this._esc(data.trip_concept || '旅の余白をめぐる日')}</p>
+          <h2 class="sc-trip-title">${this._esc(data.trip_title || '旅のしおり')}</h2>
+          <p class="sc-theme">${this._esc(theme)}</p>
+        </header>
+
+        <section class="sc-type-card" data-glass>
+          <div class="sc-type-copy">
+            <p class="sc-label">TRAVEL TYPE</p>
+            <strong>${this._esc(persona.name || '旅タイプ')}</strong>
+            <small>${this._esc(`${(persona.code || 'TYPE')}・${persona.tagline || 'あなたらしい旅の空気を大切にするタイプ'}`)}</small>
+          </div>
+          <figure class="sc-type-visual">
+            <img src="${this._esc(typeImage)}" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';">
+            <span>${this._esc((persona.name || '旅').slice(0, 1))}</span>
+          </figure>
+        </section>
+
+        <div class="sc-tags">${tagsHtml}</div>
+
+        <section class="sc-route-card" data-glass>
+          <div class="sc-day-pill">${(data.days || []).length > 1 ? 'HIGHLIGHT' : 'DAY 1'}</div>
+          <ol class="sc-route-list">${rowsHtml}</ol>
+        </section>
+
+        <p class="sc-footer-message">${footer}</p>
+        <div class="sc-card-footer">
+          <span></span>
+          <b>Tabi OS</b>
         </div>
-        <div class="sc-days">${daysHtml}</div>
-        <div class="sc-footer" data-glass>
-          <div class="sc-summary-text">${summarySnip}</div>
-          <div class="sc-hashtag">#tabios</div>
-        </div>
+        <div class="sc-hashtag">#Tabios</div>
       </div>
     `;
+  },
+
+  _getStoredPersonality() {
+    try {
+      return JSON.parse(sessionStorage.getItem('tabios_personality') || 'null');
+    } catch(e) {
+      return null;
+    }
+  },
+
+  _getStoryTags(data) {
+    const cfgTags = data.image_config?.visual_keywords || [];
+    const dayTheme = data.days?.[0]?.theme ? [data.days[0].theme] : [];
+    return [...cfgTags, ...dayTheme, '旅の余白']
+      .filter(Boolean)
+      .map(tag => String(tag).replace(/^#/, '').trim())
+      .filter((tag, idx, arr) => tag && arr.indexOf(tag) === idx)
+      .slice(0, 3);
+  },
+
+  _getStoryRows(data) {
+    const days = data.days?.length ? data.days : [];
+    if (days.length > 1) {
+      return days.slice(0, 3).map(day => {
+        const spots = (day.schedule || [])
+          .filter(item => item.category !== 'move' && item.place)
+          .slice(0, 2)
+          .map(item => item.place);
+        return {
+          time: `DAY ${day.day}`,
+          place: day.theme || spots.join(' → ') || `Day ${day.day}`,
+          note: spots.join(' / ')
+        };
+      });
+    }
+
+    return ((days[0] || {}).schedule || [])
+      .filter(item => item.category !== 'move' && item.place)
+      .slice(0, 3)
+      .map(item => ({
+        time: item.time || '',
+        place: item.place || '',
+        note: item.reason || item.tips || ''
+      }));
+  },
+
+  _formatStoryFooter(text) {
+    const compact = (text || '旅先の美しい余白を拾い集める旅。').replace(/\s+/g, '');
+    if (compact.length <= 22) return this._esc(compact);
+    const midpoint = Math.min(18, Math.ceil(compact.length / 2));
+    return `${this._esc(compact.slice(0, midpoint))}<br>${this._esc(compact.slice(midpoint, 42))}`;
+  },
+
+  _esc(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
   },
 
   _renderDays(container, days, area) {
