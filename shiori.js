@@ -390,9 +390,9 @@ const imageExporter = {
 
   async download(data) {
     const overlay = document.getElementById('loadingOverlay');
-    const btnSave = document.getElementById('btnSaveImg');
+    const saveButtons = document.querySelectorAll('[data-save-story]');
     overlay.style.display = 'flex';
-    if (btnSave) btnSave.disabled = true;
+    saveButtons.forEach(btn => { btn.disabled = true; });
 
     try {
       // 1. Create an off-screen capture clone of the story card at exact 360×640
@@ -464,7 +464,7 @@ const imageExporter = {
       alert('画像の生成に失敗しました。ページを更新して再試行してください。');
     } finally {
       overlay.style.display = 'none';
-      if (btnSave) btnSave.disabled = false;
+      saveButtons.forEach(btn => { btn.disabled = false; });
     }
   },
 
@@ -511,6 +511,63 @@ const imageExporter = {
   }
 };
 
+const shioriShare = {
+  encode(payload) {
+    const json = JSON.stringify(payload);
+    const bytes = new TextEncoder().encode(json);
+    let binary = '';
+    bytes.forEach(byte => { binary += String.fromCharCode(byte); });
+    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+  },
+
+  decode(value) {
+    const normalized = value.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = normalized + '='.repeat((4 - normalized.length % 4) % 4);
+    const binary = atob(padded);
+    const bytes = Uint8Array.from(binary, char => char.charCodeAt(0));
+    return JSON.parse(new TextDecoder().decode(bytes));
+  },
+
+  readFromHash() {
+    const params = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    const packed = params.get('tabios');
+    if (!packed) return null;
+    try {
+      return this.decode(packed);
+    } catch(e) {
+      console.warn('Share data decode failed:', e);
+      return null;
+    }
+  },
+
+  makeUrl(data, area) {
+    const payload = { data, area };
+    const url = new URL(window.location.href);
+    url.hash = `tabios=${this.encode(payload)}`;
+    return url.toString();
+  },
+
+  async share(data, area) {
+    const url = this.makeUrl(data, area);
+    const title = data.trip_title ? `旅のしおり: ${data.trip_title}` : '旅のしおり';
+    const text = data.trip_concept || 'Tabi OSで作った旅のしおりです。';
+
+    try {
+      if (navigator.share) {
+        await navigator.share({ title, text, url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        alert('共有リンクをコピーしました。');
+      }
+    } catch(e) {
+      if (e?.name !== 'AbortError') {
+        await navigator.clipboard.writeText(url);
+        alert('共有リンクをコピーしました。');
+      }
+    }
+  }
+};
+
 /* ────────────────────────────────────────────────────────────────
    5. Init
 ──────────────────────────────────────────────────────────────── */
@@ -544,8 +601,9 @@ function showNoData() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  const rawData = sessionStorage.getItem('tabios_shiori_data');
-  const area    = sessionStorage.getItem('tabios_destination') || '';
+  const shared = shioriShare.readFromHash();
+  const rawData = shared ? JSON.stringify(shared.data) : sessionStorage.getItem('tabios_shiori_data');
+  const area    = shared?.area || sessionStorage.getItem('tabios_destination') || '';
 
   if (!rawData) { showNoData(); return; }
 
@@ -561,10 +619,28 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
+  if (shared) {
+    sessionStorage.setItem('tabios_shiori_data', JSON.stringify(data));
+    sessionStorage.setItem('tabios_destination', area);
+  }
+
   // Render everything
   shioriRenderer.render(data, area);
 
-  // Save image button
+  // Action buttons
+  document.querySelectorAll('[data-save-story]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      imageExporter.download(data);
+    });
+  });
+
+  document.querySelectorAll('[data-share-shiori]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      shioriShare.share(data, area);
+    });
+  });
+
+  // Backward compatibility for older markup
   document.getElementById('btnSaveImg')?.addEventListener('click', () => {
     imageExporter.download(data);
   });
